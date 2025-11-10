@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const membershipRoutes = require('./routes/membershipRoutes');
+const informationRoutes = require('./routes/informationRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/', membershipRoutes);
+app.use('/', informationRoutes);
 
 // 404 handler
 app.use((req, res) => {
