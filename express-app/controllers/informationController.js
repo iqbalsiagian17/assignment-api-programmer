@@ -1,21 +1,17 @@
 const pool = require('../config/database');
 
 class InformationController {
-  // GET /banner
   async getBanners(req, res) {
     const client = await pool.connect();
-    
+
     try {
-      // Get all active banners ordered by display_order using prepared statement
       const getBannersQuery = `
         SELECT banner_name, banner_image, description
         FROM banners
-        WHERE is_active = $1
-        ORDER BY display_order ASC
+        ORDER BY id ASC
       `;
-      
-      const result = await client.query(getBannersQuery, [true]);
 
+      const result = await client.query(getBannersQuery);
       const banners = result.rows;
 
       return res.status(200).json({
@@ -36,6 +32,7 @@ class InformationController {
     }
   }
 
+
   // GET /services
   async getServices(req, res) {
     const client = await pool.connect();
@@ -45,11 +42,10 @@ class InformationController {
       const getServicesQuery = `
         SELECT service_code, service_name, service_icon, service_tariff
         FROM services
-        WHERE is_active = $1
         ORDER BY id ASC
       `;
       
-      const result = await client.query(getServicesQuery, [true]);
+      const result = await client.query(getServicesQuery);
 
       const services = result.rows;
 

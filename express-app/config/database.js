@@ -12,13 +12,12 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-// Test connection
 pool.on('connect', () => {
-  console.log('Connected to PostgreSQL database');
+  console.log('Connected database');
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+  console.error('Unexpected error', err);
   process.exit(-1);
 });
 

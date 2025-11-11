@@ -40,8 +40,6 @@ CREATE TABLE banners (
     banner_name VARCHAR(100) NOT NULL,
     banner_image TEXT NOT NULL,
     description TEXT,
-    is_active BOOLEAN DEFAULT true,
-    display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,7 +50,6 @@ CREATE TABLE services (
     service_name VARCHAR(100) NOT NULL,
     service_icon TEXT NOT NULL,
     service_tariff INTEGER NOT NULL,
-    is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -105,9 +102,7 @@ EXECUTE FUNCTION initialize_user_balance();
 
 -- 7️⃣ Indexes
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_banners_active_order ON banners(is_active, display_order);
 CREATE INDEX idx_services_code ON services(service_code);
-CREATE INDEX idx_services_active ON services(is_active);
 CREATE INDEX idx_balances_user_id ON balances(user_id);
 CREATE INDEX idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX idx_transactions_invoice ON transactions(invoice_number);
@@ -115,13 +110,13 @@ CREATE INDEX idx_transactions_created_on ON transactions(created_on DESC);
 CREATE INDEX idx_transactions_user_created ON transactions(user_id, created_on DESC);
 
 -- 8️⃣ Dummy Data
-INSERT INTO banners (banner_name, banner_image, description, display_order) VALUES
-('Banner 1', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 1),
-('Banner 2', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 2),
-('Banner 3', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 3),
-('Banner 4', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 4),
-('Banner 5', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 5),
-('Banner 6', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 6);
+INSERT INTO banners (banner_name, banner_image, description) VALUES
+('Banner 1', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
+('Banner 2', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
+('Banner 3', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
+('Banner 4', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
+('Banner 5', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
+('Banner 6', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet');
 
 INSERT INTO services (service_code, service_name, service_icon, service_tariff) VALUES
 ('PAJAK', 'Pajak PBB', 'https://nutech-integrasi.app/dummy.jpg', 40000),
