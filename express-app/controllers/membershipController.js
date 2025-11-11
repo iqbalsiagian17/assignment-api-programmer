@@ -6,7 +6,7 @@ const fs = require('fs');
 
 class MembershipController {
   // POST /registration
-  async registration(req, res) {
+  async registration(req, res, next) {
     const client = await pool.connect();
     
     try {
@@ -56,7 +56,7 @@ class MembershipController {
   }
 
   // POST /login
-  async login(req, res) {
+  async login(req, res, next) {
     const client = await pool.connect();
     
     try {
@@ -119,7 +119,7 @@ class MembershipController {
   }
 
   // GET /profile
-  async getProfile(req, res) {
+  async getProfile(req, res, next) {
     const client = await pool.connect();
     
     try {
@@ -167,7 +167,7 @@ class MembershipController {
   }
 
   // PUT /profile/update
-  async updateProfile(req, res) {
+  async updateProfile(req, res, next) {
     const client = await pool.connect();
     
     try {
@@ -218,7 +218,7 @@ class MembershipController {
   }
 
   // PUT /profile/image
-  async updateProfileImage(req, res) {
+  async updateProfileImage(req, res, next) {
     const client = await pool.connect();
     
     try {

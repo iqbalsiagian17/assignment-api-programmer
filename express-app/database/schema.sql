@@ -1,10 +1,29 @@
--- Create database
+-- 1️⃣ Create database
 CREATE DATABASE nutech_test;
 
--- Connect to database
+-- 2️⃣ Connect
 \c nutech_test;
 
--- Create users table
+-- 3️⃣ Utility function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4️⃣ Function for auto balance
+CREATE OR REPLACE FUNCTION initialize_user_balance()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO balances (user_id, balance)
+    VALUES (NEW.id, 0);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 5️⃣ Tables
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -16,7 +35,6 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create banners table
 CREATE TABLE banners (
     id SERIAL PRIMARY KEY,
     banner_name VARCHAR(100) NOT NULL,
@@ -28,7 +46,6 @@ CREATE TABLE banners (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create services table
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
     service_code VARCHAR(50) UNIQUE NOT NULL,
@@ -40,40 +57,72 @@ CREATE TABLE services (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create trigger for banners updated_at
-CREATE TRIGGER update_banners_updated_at BEFORE UPDATE ON banners
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TABLE balances (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    balance BIGINT DEFAULT 0 CHECK (balance >= 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Create trigger for services updated_at
-CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    invoice_number VARCHAR(100) UNIQUE NOT NULL,
+    transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('TOPUP', 'PAYMENT')),
+    service_code VARCHAR(50) REFERENCES services(service_code),
+    service_name VARCHAR(100),
+    total_amount BIGINT NOT NULL,
+    description TEXT,
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Create index on email for faster lookups
+-- 6️⃣ Triggers
+CREATE TRIGGER update_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_banners_updated_at
+BEFORE UPDATE ON banners
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_services_updated_at
+BEFORE UPDATE ON services
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_balances_updated_at
+BEFORE UPDATE ON balances
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER create_balance_on_user_registration
+AFTER INSERT ON users
+FOR EACH ROW
+EXECUTE FUNCTION initialize_user_balance();
+
+-- 7️⃣ Indexes
 CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_banners_active_order ON banners(is_active, display_order);
+CREATE INDEX idx_services_code ON services(service_code);
+CREATE INDEX idx_services_active ON services(is_active);
+CREATE INDEX idx_balances_user_id ON balances(user_id);
+CREATE INDEX idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX idx_transactions_invoice ON transactions(invoice_number);
+CREATE INDEX idx_transactions_created_on ON transactions(created_on DESC);
+CREATE INDEX idx_transactions_user_created ON transactions(user_id, created_on DESC);
 
--- Create function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Create trigger to automatically update updated_at
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Insert sample banner data
+-- 8️⃣ Dummy Data
 INSERT INTO banners (banner_name, banner_image, description, display_order) VALUES
-('Banner 1', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 1),
-('Banner 2', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 2),
-('Banner 3', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 3),
-('Banner 4', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 4),
-('Banner 5', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 5),
-('Banner 6', 'https://nutech-integrasi.app/dummy.jpg', 'Lerem Ipsum Dolor sit amet', 6);
+('Banner 1', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 1),
+('Banner 2', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 2),
+('Banner 3', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 3),
+('Banner 4', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 4),
+('Banner 5', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 5),
+('Banner 6', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet', 6);
 
--- Insert sample services data
 INSERT INTO services (service_code, service_name, service_icon, service_tariff) VALUES
 ('PAJAK', 'Pajak PBB', 'https://nutech-integrasi.app/dummy.jpg', 40000),
 ('PLN', 'Listrik', 'https://nutech-integrasi.app/dummy.jpg', 10000),
@@ -87,8 +136,3 @@ INSERT INTO services (service_code, service_name, service_icon, service_tariff) 
 ('VOUCHER_MAKANAN', 'Voucher Makanan', 'https://nutech-integrasi.app/dummy.jpg', 100000),
 ('QURBAN', 'Qurban', 'https://nutech-integrasi.app/dummy.jpg', 200000),
 ('ZAKAT', 'Zakat', 'https://nutech-integrasi.app/dummy.jpg', 300000);
-
--- Create indexes
-CREATE INDEX idx_banners_active_order ON banners(is_active, display_order);
-CREATE INDEX idx_services_code ON services(service_code);
-CREATE INDEX idx_services_active ON services(is_active);
