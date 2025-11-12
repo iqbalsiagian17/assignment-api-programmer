@@ -10,39 +10,15 @@ const {
   validate
 } = require('../validators/membershipValidator');
 
-// Public routes
-router.post(
-  '/registration',
-  registrationValidator,
-  validate,
-  membershipController.registration
-);
+router.post('/registration', registrationValidator, validate, membershipController.registration);
 
-router.post(
-  '/login',
-  loginValidator,
-  validate,
-  membershipController.login
-);
+router.post('/login', loginValidator, validate, membershipController.login);
 
-// Private routes (require authentication)
-router.get(
-  '/profile',
-  authMiddleware,
-  membershipController.getProfile
-);
+router.get('/profile', authMiddleware, membershipController.getProfile);
 
-router.put(
-  '/profile/update',
-  authMiddleware,
-  updateProfileValidator,
-  validate,
-  membershipController.updateProfile
-);
+router.put('/profile/update', authMiddleware, updateProfileValidator, validate, membershipController.updateProfile);
 
-router.put(
-  '/profile/image',
-  authMiddleware,
+router.put('/profile/image', authMiddleware,
   (req, res, next) => {
     upload.single('file')(req, res, (err) => {
       if (err) {

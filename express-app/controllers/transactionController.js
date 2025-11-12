@@ -1,6 +1,5 @@
 const pool = require('../config/database');
 
-// Helper function di luar class
 const generateInvoiceNumber = () => {
   const now = new Date();
   const day = String(now.getDate()).padStart(2, '0');
@@ -13,7 +12,6 @@ const generateInvoiceNumber = () => {
 };
 
 class TransactionController {
-  // GET /balance
   getBalance = async (req, res) => {
     const client = await pool.connect();
     
@@ -59,7 +57,6 @@ class TransactionController {
     }
   }
 
-  // POST /topup
   topup = async (req, res) => {
     const client = await pool.connect();
     
@@ -102,7 +99,6 @@ class TransactionController {
       const balanceResult = await client.query(updateBalanceQuery, [top_up_amount, userId]);
       const newBalance = balanceResult.rows[0].balance;
 
-      // Generate invoice number - panggil function langsung
       const invoiceNumber = generateInvoiceNumber();
 
       const insertTransactionQuery = `
@@ -142,7 +138,6 @@ class TransactionController {
     }
   }
 
-  // POST /transaction
   transaction = async (req, res) => {
     const client = await pool.connect();
     
@@ -176,10 +171,10 @@ class TransactionController {
       const getServiceQuery = `
         SELECT service_code, service_name, service_tariff
         FROM services
-        WHERE service_code = $1 AND is_active = $2
+        WHERE service_code = $1 
       `;
       
-      const serviceResult = await client.query(getServiceQuery, [service_code, true]);
+      const serviceResult = await client.query(getServiceQuery, [service_code]);
 
       if (serviceResult.rows.length === 0) {
         await client.query('ROLLBACK');
@@ -210,7 +205,6 @@ class TransactionController {
       
       await client.query(updateBalanceQuery, [serviceTariff, userId]);
 
-      // Generate invoice number - panggil function langsung
       const invoiceNumber = generateInvoiceNumber();
 
       const insertTransactionQuery = `
@@ -260,7 +254,6 @@ class TransactionController {
     }
   }
 
-  // GET /transaction/history
   getHistory = async (req, res) => {
     const client = await pool.connect();
     

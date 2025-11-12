@@ -33,12 +33,10 @@ class InformationController {
   }
 
 
-  // GET /services
   async getServices(req, res) {
     const client = await pool.connect();
     
     try {
-      // Get all active services using prepared statement
       const getServicesQuery = `
         SELECT service_code, service_name, service_icon, service_tariff
         FROM services

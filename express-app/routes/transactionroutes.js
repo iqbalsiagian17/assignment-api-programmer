@@ -9,35 +9,12 @@ const {
   validate
 } = require('../validators/transactionValidator');
 
-// All transaction routes require authentication
-router.get(
-  '/balance',
-  authMiddleware,
-  transactionController.getBalance
-);
+router.get('/balance', authMiddleware, transactionController.getBalance);
 
-router.post(
-  '/topup',
-  authMiddleware,
-  topupValidator,
-  validate,
-  transactionController.topup
-);
+router.post('/topup', authMiddleware, topupValidator, validate, transactionController.topup);
 
-router.post(
-  '/transaction',
-  authMiddleware,
-  transactionValidator,
-  validate,
-  transactionController.transaction
-);
+router.post('/transaction', authMiddleware, transactionValidator, validate, transactionController.transaction);
 
-router.get(
-  '/transaction/history',
-  authMiddleware,
-  historyValidator,
-  validate,
-  transactionController.getHistory
-);
+router.get('/transaction/history', authMiddleware, historyValidator, validate, transactionController.getHistory);
 
 module.exports = router;

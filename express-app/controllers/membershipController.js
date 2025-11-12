@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 
 class MembershipController {
-  // POST /registration
   async registration(req, res, next) {
     const client = await pool.connect();
     
@@ -24,11 +23,9 @@ class MembershipController {
         });
       }
 
-      // Hash password
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Insert user using prepared statement
       const insertQuery = `
         INSERT INTO users (email, first_name, last_name, password)
         VALUES ($1, $2, $3, $4)
@@ -55,14 +52,12 @@ class MembershipController {
     }
   }
 
-  // POST /login
   async login(req, res, next) {
     const client = await pool.connect();
     
     try {
       const { email, password } = req.body;
 
-      // Get user using prepared statement
       const getUserQuery = `
         SELECT id, email, password, first_name, last_name 
         FROM users 
@@ -80,7 +75,6 @@ class MembershipController {
 
       const user = result.rows[0];
 
-      // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
@@ -91,7 +85,6 @@ class MembershipController {
         });
       }
 
-      // Generate JWT token with 12 hours expiration
       const token = jwt.sign(
         { email: user.email },
         process.env.JWT_SECRET,
@@ -118,14 +111,12 @@ class MembershipController {
     }
   }
 
-  // GET /profile
   async getProfile(req, res, next) {
     const client = await pool.connect();
     
     try {
       const email = req.userEmail;
 
-      // Get user profile using prepared statement
       const getUserQuery = `
         SELECT email, first_name, last_name, profile_image 
         FROM users 
@@ -166,7 +157,6 @@ class MembershipController {
     }
   }
 
-  // PUT /profile/update
   async updateProfile(req, res, next) {
     const client = await pool.connect();
     
@@ -174,7 +164,6 @@ class MembershipController {
       const email = req.userEmail;
       const { first_name, last_name } = req.body;
 
-      // Update user profile using prepared statement
       const updateQuery = `
         UPDATE users 
         SET first_name = $1, last_name = $2
@@ -217,7 +206,6 @@ class MembershipController {
     }
   }
 
-  // PUT /profile/image
   async updateProfileImage(req, res, next) {
     const client = await pool.connect();
     
@@ -232,14 +220,11 @@ class MembershipController {
         });
       }
 
-      // Generate image URL
       const imageUrl = `${process.env.BASE_URL}/${process.env.UPLOAD_DIR}/${req.file.filename}`;
 
-      // Get old profile image using prepared statement
       const getOldImageQuery = 'SELECT profile_image FROM users WHERE email = $1';
       const oldImageResult = await client.query(getOldImageQuery, [email]);
 
-      // Update profile image using prepared statement
       const updateQuery = `
         UPDATE users 
         SET profile_image = $1
@@ -250,7 +235,6 @@ class MembershipController {
       const result = await client.query(updateQuery, [imageUrl, email]);
 
       if (result.rows.length === 0) {
-        // Delete uploaded file if user not found
         fs.unlinkSync(req.file.path);
         
         return res.status(401).json({
@@ -260,7 +244,6 @@ class MembershipController {
         });
       }
 
-      // Delete old profile image if it's not the default one
       if (oldImageResult.rows.length > 0) {
         const oldImageUrl = oldImageResult.rows[0].profile_image;
         if (oldImageUrl && !oldImageUrl.includes('profile.jpeg')) {
@@ -287,7 +270,6 @@ class MembershipController {
     } catch (error) {
       console.error('Update profile image error:', error);
       
-      // Delete uploaded file on error
       if (req.file) {
         fs.unlinkSync(req.file.path);
       }

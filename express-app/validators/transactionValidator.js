@@ -27,19 +27,16 @@ const historyValidator = [
     .toInt(),
 ];
 
-// FIXED: Make sure this returns properly
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const firstError = errors.array()[0];
-    // Make sure we return after sending response
     return res.status(400).json({
       status: 102,
       message: firstError.msg,
       data: null
     });
   }
-  // Call next() if no errors
   next();
 };
 

@@ -1,10 +1,7 @@
--- 1️⃣ Create database
 CREATE DATABASE nutech_test;
 
--- 2️⃣ Connect
 \c nutech_test;
 
--- 3️⃣ Utility function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -13,7 +10,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4️⃣ Function for auto balance
 CREATE OR REPLACE FUNCTION initialize_user_balance()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -23,7 +19,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 5️⃣ Tables
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -74,7 +69,6 @@ CREATE TABLE transactions (
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6️⃣ Triggers
 CREATE TRIGGER update_users_updated_at
 BEFORE UPDATE ON users
 FOR EACH ROW
@@ -100,7 +94,6 @@ AFTER INSERT ON users
 FOR EACH ROW
 EXECUTE FUNCTION initialize_user_balance();
 
--- 7️⃣ Indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_services_code ON services(service_code);
 CREATE INDEX idx_balances_user_id ON balances(user_id);
@@ -109,7 +102,6 @@ CREATE INDEX idx_transactions_invoice ON transactions(invoice_number);
 CREATE INDEX idx_transactions_created_on ON transactions(created_on DESC);
 CREATE INDEX idx_transactions_user_created ON transactions(user_id, created_on DESC);
 
--- 8️⃣ Dummy Data
 INSERT INTO banners (banner_name, banner_image, description) VALUES
 ('Banner 1', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),
 ('Banner 2', 'https://nutech-integrasi.app/dummy.jpg', 'Lorem Ipsum Dolor sit amet'),

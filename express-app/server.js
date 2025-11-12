@@ -3,36 +3,27 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const pool = require('./config/database');
-
-// ==================== EXPRESS APP ====================
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Health check
 app.get('/', (req, res) => {
   return res.status(200).json({
-    message: 'Nutech Integration Test API',
-    version: '1.0.0',
+    message: 'Integration Test API',
     status: 'running'
   });
 });
 
-// Import routes
 const membershipRoutes = require('./routes/membershipRoutes');
 const informationRoutes = require('./routes/informationRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 
-// Apply routes
 app.use(membershipRoutes);
 app.use(informationRoutes);
 app.use(transactionRoutes);
 
-// 404 handler - ADD next parameter and pass errors to error handler
 app.use((req, res, next) => {
   return res.status(404).json({
     status: 404,
@@ -41,7 +32,6 @@ app.use((req, res, next) => {
   });
 });
 
-// Error handler - MUST have 4 parameters
 app.use((err, req, res, next) => {
   console.error('=== ERROR CAUGHT ===');
   console.error('Error message:', err.message);
@@ -63,22 +53,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ==================== START SERVER ====================
 const PORT = process.env.PORT || 3000;
 
 pool.query('SELECT NOW()', (err, result) => {
   if (err) {
-    console.error('❌ Failed to connect to database:', err.message);
+    console.error('Failed to connect to database:', err.message);
     process.exit(1);
   }
   
-  console.log('✅ Database connected successfully');
-  console.log('📅 Database time:', result.rows[0].now);
+  console.log('Database connected successfully');
   
   const server = app.listen(PORT, () => {
-    console.log('🚀 Server is running on port', PORT);
-    console.log('🌍 Environment:', process.env.NODE_ENV || 'development');
-    console.log('📍 URL: http://localhost:' + PORT);
+    console.log('Server running on port', PORT);
   });
 
   process.on('SIGTERM', () => {
